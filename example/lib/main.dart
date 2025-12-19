@@ -302,7 +302,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Flutter Pos Plugin Platform example app'),
+          title: const Text('Thermal Printer Plus example app'),
         ),
         body: Center(
           child: Container(

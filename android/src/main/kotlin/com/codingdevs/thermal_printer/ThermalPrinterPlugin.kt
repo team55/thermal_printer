@@ -381,15 +381,16 @@ class ThermalPrinterPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Re
      */
     private fun checkPermissions(): Boolean {
         val requiredPermissions = mutableListOf(
-            Manifest.permission.ACCESS_FINE_LOCATION
-            // Commented out for newer Android versions, but you can re-enable if needed:
-            // Manifest.permission.BLUETOOTH,
-            // Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requiredPermissions.add(Manifest.permission.BLUETOOTH_SCAN)
             requiredPermissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            requiredPermissions.add(Manifest.permission.BLUETOOTH)
+            requiredPermissions.add(Manifest.permission.BLUETOOTH_ADMIN)
         }
 
         // 1) If all permissions are already granted, return true.

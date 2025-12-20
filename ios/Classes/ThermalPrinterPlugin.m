@@ -111,6 +111,14 @@
            }
            NSData *data2 = [NSData dataWithBytes:cArray length:sizeof(cArray)];
 //           NSLog(@"bytes in hex: %@", [data2 description]);
+           
+           // Guard: Check if characteristic exists before writing
+           if (Manager.bleConnecter != nil && Manager.bleConnecter.transparentDataWriteChar == nil) {
+               NSLog(@"[ThermalPrinterPlugin] ERROR: Cannot write - transparentDataWriteChar is nil. Characteristics may not be discovered yet.");
+               result(nil);
+               return; // Prevent crash by returning early
+           }
+         
            [Manager write:data2];
            result(nil);
        } @catch(FlutterError *e) {

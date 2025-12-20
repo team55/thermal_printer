@@ -1,3 +1,7 @@
+## 1.0.12
+
+* fixed an ios major crash issue when connecting to a Bt device
+
 ## 1.0.11
 
 * fixed windows build

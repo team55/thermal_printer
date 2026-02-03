@@ -369,8 +369,11 @@ class ThermalPrinterPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Re
     private fun printBytes(bytes: ArrayList<Int>?, result: Result) {
         if (bytes == null) return
         adapter.setHandler(usbHandler)
-        adapter.printBytes(bytes)
-        result.success(true)
+        // adapter.printBytes(bytes)
+        // result.success(true)
+        // с основного проект
+        val resultPrintByte = adapter.printBytes(bytes)
+        result.success(resultPrintByte)
     }
 
     /**

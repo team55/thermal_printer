@@ -205,7 +205,7 @@ class Generator {
   }
 
   /// Image rasterization
-  List<int> _toRasterFormatOld(img.Image imgSrc) {
+  List<int> _toRasterFormat(img.Image imgSrc) {
     final img.Image image = img.Image.from(imgSrc); // make a copy
     final int widthPx = image.width;
     final int heightPx = image.height;
@@ -235,8 +235,9 @@ class Generator {
     return _packBitsIntoBytes(oneChannelBytes);
   }
 
-  /// Image rasterization
-  List<int> _toRasterFormat(img.Image imgSrc) {
+  /// перенесено с основного проекта - есть баг
+  ///
+  List<int> _toRasterFormat2(img.Image imgSrc) {
     final image = img.Image.from(imgSrc); // make a copy
     final int widthPx = image.width;
     final int heightPx = image.height;

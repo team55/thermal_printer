@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:thermal_printer_plus/discovery.dart';
 import 'package:thermal_printer_plus/thermal_printer.dart';
 
@@ -95,10 +95,16 @@ class UsbPrinterConnector implements PrinterConnector<UsbPrinterInput> {
     }
   }
 
+  // По факту не используемое
   static DiscoverResult<UsbPrinterInfo> discoverPrinters() async {
+    //
     if (Platform.isAndroid) {
       final List<dynamic> results =
           await flutterPrinterChannel.invokeMethod('getList');
+
+      debugPrint("discoverPrinters >>>>");
+      debugPrint(results.toString());
+
       return results
           .map((dynamic r) => PrinterDiscovered<UsbPrinterInfo>(
                 name: r['product'],
@@ -129,30 +135,56 @@ class UsbPrinterConnector implements PrinterConnector<UsbPrinterInput> {
     return [];
   }
 
+  // TODO: тут упрощенный вариант
+  // накидал дополнительных полей
   Stream<PrinterDevice> discovery() async* {
-    if (Platform.isAndroid) {
-      final List<dynamic> results =
-          await flutterPrinterChannel.invokeMethod('getList');
-      for (final device in results) {
-        var r = await device;
-        yield PrinterDevice(
-          name: r['product'],
-          vendorId: r['vendorId'],
-          productId: r['productId'],
-          // name: r['name'],
-        );
-      }
-    } else if (Platform.isWindows) {
-      final List<dynamic> results =
-          await flutterPrinterChannel.invokeMethod('getList');
-      for (final device in results) {
-        var r = await device;
-        yield PrinterDevice(
-          name: r['name'],
-          // model: r['model'],
-        );
-      }
+    final List<dynamic> results =
+        await flutterPrinterChannel.invokeMethod('getList');
+    debugPrint("discovery, result: ${results.toString()}");
+
+    for (final device in results) {
+      var r = await device;
+      yield PrinterDevice(
+        name: r['name'],
+        vendorId: r['vendorId'],
+        productId: r['productId'],
+        //
+        product: r['product'],
+        deviceId: r['productId'],
+        address: r['address'],
+        manufacturer: r['manufacturer'],
+        deviceClass: r['deviceClass'],
+        deviceSubclass: r['deviceSubclass'],
+      );
     }
+
+    // if (Platform.isAndroid) {
+    //   final List<dynamic> results =
+    //       await flutterPrinterChannel.invokeMethod('getList');
+
+    //   debugPrint("discovery >>>>");
+    //   debugPrint(results.toString());
+
+    //   for (final device in results) {
+    //     var r = await device;
+    //     yield PrinterDevice(
+    //       name: r['product'],
+    //       vendorId: r['vendorId'],
+    //       productId: r['productId'],
+    //       // name: r['name'],
+    //     );
+    //   }
+    // } else if (Platform.isWindows) {
+    //   final List<dynamic> results =
+    //       await flutterPrinterChannel.invokeMethod('getList');
+    //   for (final device in results) {
+    //     var r = await device;
+    //     yield PrinterDevice(
+    //       name: r['name'],
+    //       // model: r['model'],
+    //     );
+    //   }
+    // }
   }
 
   Future<bool> _connect({UsbPrinterInput? model}) async {

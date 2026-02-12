@@ -75,6 +75,18 @@ static dispatch_once_t once;
  *  连接
  */
 -(void)connectPeripheral:(CBPeripheral *)peripheral options:(nullable NSDictionary<NSString *,id> *)options timeout:(NSUInteger)timeout connectBlack:(void(^_Nullable)(ConnectState state)) connectState{
+    // Ensure BLEConnecter exists - recreate only if it was never created
+    // (we don't deallocate it on disconnect to prevent delegate crashes)
+    if (_bleConnecter == nil) {
+        currentConnMethod = BLUETOOTH;
+        [self initConnecter:currentConnMethod];
+    }
+    
+    // If there's an existing connection, disconnect it first
+    if (_bleConnecter.connPeripheral != nil && _bleConnecter.connPeripheral != peripheral) {
+        [_bleConnecter closePeripheral:_bleConnecter.connPeripheral];
+    }
+        
     [_bleConnecter connectPeripheral:peripheral options:options timeout:timeout connectBlack:connectState];
 }
 

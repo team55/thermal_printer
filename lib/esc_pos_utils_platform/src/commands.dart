@@ -66,3 +66,4 @@ const cCashDrawerPin5 = '${esc}p130';
 
 // QR Code
 const cQrHeader = '$gs(k';
+const cControlHeader = '$gs(K';

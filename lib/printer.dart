@@ -1,8 +1,11 @@
 import 'package:flutter/services.dart';
 
-final flutterPrinterChannel = const MethodChannel('com.codingdevs.thermal_printer');
-final flutterPrinterEventChannelBT = const EventChannel('com.codingdevs.thermal_printer/bt_state');
-final flutterPrinterEventChannelUSB = const EventChannel('com.codingdevs.thermal_printer/usb_state');
+final flutterPrinterChannel =
+    const MethodChannel('com.codingdevs.thermal_printer');
+final flutterPrinterEventChannelBT =
+    const EventChannel('com.codingdevs.thermal_printer/bt_state');
+final flutterPrinterEventChannelUSB =
+    const EventChannel('com.codingdevs.thermal_printer/usb_state');
 final iosChannel = const MethodChannel('thermal_printer/methods');
 final iosStateChannel = const EventChannel('thermal_printer/state');
 
@@ -11,6 +14,15 @@ enum BTStatus { none, connecting, connected, scanning, stopScanning }
 enum USBStatus { none, connecting, connected }
 
 enum TCPStatus { none, connected }
+
+enum PrinterState {
+  none,
+  printing,
+  finished,
+  // stopped,
+  //
+  error
+}
 
 abstract class Printer {
   Future<bool> image(Uint8List image, {int threshold = 150});

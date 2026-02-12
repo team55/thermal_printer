@@ -193,7 +193,7 @@ class _MyAppState extends State<MyApp> {
     // bytes += generator.emptyLines(1);
 
     // sum width total column must be 12
-    bytes += generator.row([
+    bytes += generator.rowV2([
       PosColumn(
           width: 8,
           text: 'Lemon lime export quality per pound x 5 units',
@@ -232,7 +232,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     // // Chinese characters
-    bytes += generator.row([
+    bytes += generator.rowV2([
       PosColumn(
           width: 8,
           text: '豚肉・木耳と玉子炒め弁当',

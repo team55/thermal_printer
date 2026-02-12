@@ -137,7 +137,17 @@ class ThermalPrinterPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Re
                 BluetoothConstants.MESSAGE_TOAST -> {
                     val bundle = msg.data
                     bundle?.getInt(BluetoothConnection.TOAST)?.let {
-                        Toast.makeText(context, context!!.getString(it), Toast.LENGTH_SHORT).show()
+                        // Toast.makeText(context, context!!.getString(it), Toast.LENGTH_SHORT).show()
+                        if (context != null) {
+                            try {
+                                Toast.makeText(context, context!!.getString(it), Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                // no-op
+                                // this situation can happen when using this lib to print on bluetooth device,
+                                // then switch to other lib to print on the same bluetooth device
+                            }
+
+                        }
                     }
                 }
                 BluetoothConstants.MESSAGE_START_SCANNING -> {
@@ -326,11 +336,15 @@ class ThermalPrinterPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Re
         for (usbDevice in usbDevices) {
             val deviceMap: HashMap<String?, String?> = HashMap()
             deviceMap["name"] = usbDevice.deviceName
-            deviceMap["manufacturer"] = usbDevice.manufacturerName
             deviceMap["product"] = usbDevice.productName
             deviceMap["deviceId"] = usbDevice.deviceId.toString()
             deviceMap["vendorId"] = usbDevice.vendorId.toString()
             deviceMap["productId"] = usbDevice.productId.toString()
+            // 
+            deviceMap["manufacturer"] = usbDevice.manufacturerName
+            deviceMap["deviceClass"] = usbDevice.deviceClass.toString()
+            deviceMap["deviceSubclass"] = usbDevice.deviceSubclass.toString()
+            // 
             list.add(deviceMap)
         }
         result.success(list)
@@ -369,29 +383,66 @@ class ThermalPrinterPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Re
     private fun printBytes(bytes: ArrayList<Int>?, result: Result) {
         if (bytes == null) return
         adapter.setHandler(usbHandler)
-        adapter.printBytes(bytes)
-        result.success(true)
+        // adapter.printBytes(bytes)
+        // result.success(true)
+        // с основного проект
+        val resultPrintByte = adapter.printBytes(bytes)
+        result.success(resultPrintByte)
     }
 
-    private fun checkPermissions(): Boolean {
-        val permissions = mutableListOf(
+    /**
+     * Checks for required Bluetooth/Location permissions. If missing, requests them.
+     *
+     * This method also prevents the infinite loop by NOT calling requestPermissions again
+     * if the user has denied permanently ("Don’t ask again").
+     */
+private fun checkPermissions(): Boolean {
+        val requiredPermissions = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-//            Manifest.permission.BLUETOOTH,
-//            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_COARSE_LOCATION
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            permissions.add(Manifest.permission.BLUETOOTH_SCAN)
-            permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+            requiredPermissions.add(Manifest.permission.BLUETOOTH_SCAN)
+            requiredPermissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            requiredPermissions.add(Manifest.permission.BLUETOOTH)
+            requiredPermissions.add(Manifest.permission.BLUETOOTH_ADMIN)
         }
 
-        if (!hasPermissions(context, *permissions.toTypedArray())) {
-            ActivityCompat.requestPermissions(currentActivity!!, permissions.toTypedArray(), PERMISSION_ALL)
+        // 1) If all permissions are already granted, return true.
+        if (hasPermissions(context, *requiredPermissions.toTypedArray())) {
+            return true
+        }
+
+        // 2) Identify which permissions we can request again
+        val permissionsToRequest = mutableListOf<String>()
+        for (permission in requiredPermissions) {
+            val granted = ActivityCompat.checkSelfPermission(context!!, permission) == PackageManager.PERMISSION_GRANTED
+            val canAskAgain = ActivityCompat.shouldShowRequestPermissionRationale(currentActivity!!, permission)
+
+            if (!granted) {
+                // If not granted, check if we can still ask for it again
+                if (canAskAgain) {
+                    // We'll add this permission to request
+                    permissionsToRequest.add(permission)
+                } else {
+                    // The user checked "Don't ask again" or the system policy prohibits asking
+                    Toast.makeText(context, "Permission is permanently denied. Please enable it in Settings.", Toast.LENGTH_LONG).show()
+                    return false
+                }
+            }
+        }
+
+        // 3) If there's no permission left to request, it means everything's either granted or permanently denied
+        if (permissionsToRequest.isEmpty()) {
             return false
         }
-        return true
-    }
 
+        // 4) Request all the missing permissions
+        ActivityCompat.requestPermissions(currentActivity!!, permissionsToRequest.toTypedArray(), PERMISSION_ALL)
+        return false
+    }
     private fun hasPermissions(context: Context?, vararg permissions: String?): Boolean {
         if (context != null) {
             for (permission in permissions) {

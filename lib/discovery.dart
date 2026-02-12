@@ -1,5 +1,7 @@
 // import 'package:flutter_star_prnt/flutter_star_prnt.dart';
 
+// Этот модуль вроде как не задействован
+
 import 'thermal_printer.dart';
 
 class PrinterDiscovered<T> {
